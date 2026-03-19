@@ -6,20 +6,167 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link rel="icon" href="./assets/img/favicon.png" type="image/x-icon">
-    <title>Lista de Tarefas</title>
+    <title>Gerenciador de Tarefas</title>
     <link rel="stylesheet" href="./assets/css/style.css">
 </head>
 
 <body>
-    
     <section class="container">
-        <h1 class="title">📄Lista de Tarefas</h1>
+        <h1 class="title">📋 Gerenciador de Tarefas</h1>
+        
+        <button class="btn-nova-tarefa">➕ Nova Tarefa</button>
 
-        <input type="text" class="input-tarefa">
-        <button class="btn-tarefa">➕</button>
+        <!-- Filtros -->
+        <div class="filtros">
+            <button class="filtro-btn ativo" data-filtro="todas">Todas</button>
+            <button class="filtro-btn" data-filtro="pendentes">Pendentes</button>
+            <button class="filtro-btn" data-filtro="concluidas">Concluídas</button>
+        </div>
 
-        <ul class="tarefas"></ul>
+        <ul class="tarefas-lista"></ul>
+
+        <p class="vazio-msg">Nenhuma tarefa adicionada ainda. 👆</p>
     </section>
+
+    <!-- Modal para criar/editar tarefa -->
+    <div class="modal" id="modalTarefa">
+        <div class="modal-conteudo">
+            <div class="modal-cabecalho">
+                <h2 id="modalTitulo">Nova Tarefa</h2>
+                <button class="fechar-modal">&times;</button>
+            </div>
+            
+            <div class="modal-body-scrollable">
+                <form id="formTarefa" class="form-tarefa">
+                <div class="form-grupo">
+                    <label for="nometarefa">Nome da Tarefa *</label>
+                    <input type="text" id="nometarefa" placeholder="Ex: Estudar JavaScript" required>
+                </div>
+
+                <div class="form-grupo">
+                    <label for="descricao">Descrição</label>
+                    <textarea id="descricao" placeholder="Descreva os detalhes da tarefa..." rows="4"></textarea>
+                </div>
+
+                <div class="form-grupo-row">
+                    <div class="form-grupo">
+                        <label for="dataConclusao">Data de Conclusão</label>
+                        <input type="date" id="dataConclusao">
+                    </div>
+                </div>
+
+                <div class="form-grupo">
+                    <label for="anexos">Anexar Arquivos</label>
+                    <input type="file" id="anexos" multiple>
+                </div>
+
+                <div id="listaAnexos" class="lista-anexos"></div>
+
+                <div class="form-acoes">
+                    <button type="submit" class="btn-salvar">Salvar Tarefa</button>
+                    <button type="button" class="btn-cancelar">Cancelar</button>
+                </div>
+            </form>
+            </div>
+            
+            <div class="modal-scroll-buttons">
+                <button class="btn-scroll-up" title="Rolar para cima">⬆️</button>
+                <button class="btn-scroll-down" title="Rolar para baixo">⬇️</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Overlay do modal -->
+    <div class="modal-overlay" id="modalOverlay"></div>
+
+    <!-- Notificação Toast -->
+    <div class="toast" id="toast">
+        <div class="toast-conteudo">
+            <span class="toast-icone" id="toastIcone">ℹ️</span>
+            <span class="toast-mensagem" id="toastMensagem"></span>
+        </div>
+        <button class="toast-fechar" id="toastFechar">&times;</button>
+    </div>
+
+    <!-- Modal de Confirmação -->
+    <div class="modal-confirmacao" id="modalConfirmacao">
+        <div class="confirmacao-conteudo">
+            <div class="confirmacao-icone" id="confirmacaoIcone">⚠️</div>
+            <h3 id="confirmacaoTitulo">Confirmação</h3>
+            <p id="confirmacaoMensagem"></p>
+            <div class="confirmacao-acoes">
+                <button class="btn-confirmar-sim" id="btnConfirmarSim">Sim, deletar</button>
+                <button class="btn-confirmar-nao" id="btnConfirmarNao">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Overlay do modal confirmação -->
+    <div class="modal-confirmacao-overlay" id="modalConfirmacaoOverlay"></div>
+
+    <!-- Modal de Detalhes da Tarefa -->
+    <div class="modal" id="modalDetalhes">
+        <div class="modal-conteudo">
+            <div class="modal-cabecalho">
+                <h2>Detalhes da Tarefa</h2>
+                <button class="fechar-modal" id="fecharModalDetalhes">&times;</button>
+            </div>
+            
+            <div class="modal-body-scrollable">
+                <div class="modal-detalhes">
+                <div class="detalhe-grupo">
+                    <label>Nome</label>
+                    <h3 id="detalheNome"></h3>
+                </div>
+
+                <div class="detalhe-grupo">
+                    <label>Descrição</label>
+                    <p id="detalheDescricao" class="detalhe-descricao"></p>
+                </div>
+
+                <div class="detalhe-grid">
+                    <div class="detalhe-grupo">
+                        <label>Data de Criação</label>
+                        <p id="detalheCriacao"></p>
+                    </div>
+                    <div class="detalhe-grupo">
+                        <label>Data de Conclusão</label>
+                        <p id="detalheConclusao"></p>
+                    </div>
+                </div>
+
+                <div class="detalhe-grid">
+                    <div class="detalhe-grupo">
+                        <label>Status</label>
+                        <p id="detalheStatus"></p>
+                    </div>
+                    <div class="detalhe-grupo">
+                        <label>Importância</label>
+                        <p id="detalheImportancia"></p>
+                    </div>
+                </div>
+
+                <div id="detalheAnexosContainer" class="detalhe-anexos-container" style="display: none;">
+                    <label>Anexos</label>
+                    <div id="detalheAnexos" class="detalhe-anexos"></div>
+                </div>
+
+                <div class="detalhes-acoes">
+                    <button id="btnDetalheEditar" class="btn-detalhe-editar">✏️ Editar</button>
+                    <button id="btnDetalheDeletar" class="btn-detalhe-deletar">🗑️ Deletar</button>
+                </div>
+                </div>
+            </div>
+            
+            <div class="modal-scroll-buttons">
+                <button class="btn-scroll-up" title="Rolar para cima">⬆️</button>
+                <button class="btn-scroll-down" title="Rolar para baixo">⬇️</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Overlay do modal detalhes -->
+    <div class="modal-overlay" id="modalDetalhesOverlay"></div>
 
     <script src="./assets/js/main.js"></script>
 </body>
